@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Companion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="header">Companion
+      <button class="btnn" id="x">X</button>
+      <button class="btnnm" id="_">_</button>
+    </div>
+    <div id="op-bgov" class="opening"></div>
+    <img id="op-bg" src="Main/cchara.png" style="border-radius: 50%; width: 150px; box-shadow: 0 0 40px rgba(24, 24, 24, 0.5); position: absolute; left: 41%; top: 50px;">
+    <span id="op-tx"  style="position: absolute; top: 230px; left: 32%; font-family:Verdana, Geneva, Tahoma, sans-serif; font-weight: bold; font-size: larger;">Master! its good to see you!</span>
+    <div id="messages" class="messages"></div>
+    <div class="input-area">
+
+      <input id="userInput" type="text" placeholder="Tulis pesan...">
+      
+      <img src="">
+      
+    </div>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById("messages");
+    const input = document.getElementById("userInput");
+    const exitbuttn = document.getElementById("x");
+    const minmbuttn = document.getElementById("_");
+    const opbov = document.getElementById("op-bgov");
+    const opbg = document.getElementById("op-bg");
+    const optx = document.getElementById("op-tx");
+    let context = []
+
+    const now = new Date();
+    const jam   = now.getHours();  // 0 - 23
+    const menit = now.getMinutes();  // Ambil menit (0–59)
+    const detik = now.getSeconds();  // Ambil detik (0–59)
+    context = `[${jam}Hours/${menit}Minutes/${detik}Seconds]`
+    const mainop = [opbov, opbg,  optx]
+    let opbol = false;
+
+    // fungsi untuk escape HTML
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    function appendMessage(text, who='ai'){
+      if(!opbol){
+        // disable semua elemen di array
+        mainop.forEach(el => {
+          if (el) el.style.display = "none";
+        });
+        opbol = true;
+      }
+      const div = document.createElement('div');
+      div.className = 'msg ' + (who==='user' ? 'user' : 'ai');
+      div.innerHTML = `<div style="margin-left: 86%; margin-top:15px;">User</div><div class="user">${escapeHtml(text)}</div>`;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+    function appendMessageAI(text, who='ai'){
+      
+      const div = document.createElement('div');
+      div.className = 'msg ' + (who==='user' ? 'user' : 'ai');
+      div.innerHTML = `<div style="color:rgba(256,256,256,0.6); display: flex; backgroud:transparent;"><img src="Main/cchara.png"style="width:60px; border-radius:50%; box-shadow:1px 2px 10px rgba(20, 20, 20, 0.8);"><span style="margin:17px 0 0 18px;">Naove</span></div><div class="Airp">${escapeHtml(text)}</div>`;
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+    }
+
+    async function getAIReply(userMessage, screencont) {
+      input.disabled = true;
+      const response = await fetch("http://localhost:8080/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            { role: "user", content: userMessage }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP error! Status: " + response.status);
+      }
+
+      const data = await response.json();
+      
+      return data.choices[0].message.content;
+    }
+
+    async function sendMessage(screecons) {
+      const text = input.value.trim();
+      if (!text) return;
+      
+      appendMessage(text);
+      input.value = '';
+
+      // skeleton loading 
+      const skeleton = document.createElement('div');
+      skeleton.className = 'msg ai';
+      skeleton.innerHTML = `<div class="meta" style="margin-left:20px;">Naove</div><div class="body skeleton" style="height:28px;width:70px;border-radius:6px; margin-left: 20px;"></div>`;
+      messagesEl.appendChild(skeleton);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      try {
+        const reply = await getAIReply(context+text);
+        skeleton.remove()
+        appendMessageAI(reply)
+      } catch (err) {
+        skeleton.innerHTML = `<div class="body">[Error: ${err.message}]</div>`;
+      } finally{
+        input.disabled = false;
+      }
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+    }
+
+    async function screencontext() {
+      input.disabled = true;
+      ipcRenderer.send("csc-open");
+      context = `[${jam}Hours:${menit}Minutes:${detik}Seconds]: `
+      try {
+        const res = await fetch('http://localhost:2182/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ flag: true })
+        });
+      
+        if (!res.ok) {
+          throw new Error("HTTP error! status: " + res.status);
+        }
+      
+        const scs = await res.json();
+        context = [`[ScreenContext]${scs.message ?? JSON.stringify(scs)}[/ScreenContext]`];
+        appendMessageAI(`[system]CurrentScreenContext Sended!`);
+      
+      } catch (err) {
+        console.error("Error screencontext:", err);
+        appendMessageAI(`[Error: ${err.message}]`);
+      } finally {
+        ipcRenderer.send('csc-close');
+        input.disabled = false;
+      }
+    
+      return context;
+    }
+
+
+
+
+    const {ipcRenderer} = require("electron");
+    exitbuttn.addEventListener('click', () => {
+      ipcRenderer.send("exit-card");
+    });
+    minmbuttn.addEventListener('click', () => {
+      ipcRenderer.send("min-card");
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+
+    if(jam >= 6 && jam <= 11){
+      appendMessageAI('Good Morning Master!');
+    }
+    if(jam >= 12 && jam <= 15 ){
+      appendMessageAI('Greetings, good afternoon, Master!');
+    }
+    if(jam >= 16 && jam <= 18){
+      appendMessageAI('Evening, Master!');
+    }
+    if(jam >= 19 && jam <= 23){
+      appendMessageAI('Master? what bring master here at this night?');
+    }
+    if(jam >= 0 && jam <= 3){
+      appendMessageAI('Master please go rest!');
+    }
+    if(jam >= 4 && jam <= 5){
+      appendMessageAI('its already dawn, Master what can i help you this early!');
+    }
+    
+  </script>
+</body>
+</html>

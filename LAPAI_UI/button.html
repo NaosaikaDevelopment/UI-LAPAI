@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Launcher</title>
+  <style>
+    body {
+      margin: 0;
+      background: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Lingkaran luar = bisa drag */
+    .overlay-btn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(61, 61, 61, 0.274);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      -webkit-app-region: drag;
+      user-select: none;
+      transition: ease-in-out 400ms;
+    } 
+    .Backstyle{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 40px; 
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(34, 34, 34, 0.37);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      -webkit-app-region: drag;
+      user-select: none;
+      transition: ease-in-out 500ms; 
+    } 
+    .Backstyle:hover{ 
+      width: 80px; 
+      height: 80px; 
+      transition: ease-in-out 700ms;
+      background: rgba(46, 34, 88, 0.301);
+        
+    }
+    .overlay-btn:hover{ 
+      width: 90px;
+      height: 90px;
+      transition: ease-in-out 400ms;  
+    }
+    /* Teks dalam tombol = klik trigger */
+    .overlay-btn span {
+      font-size: 15px;
+      font-family: monospace;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      -webkit-app-region: no-drag;
+      transition: ease-in-out 500ms;
+    }
+    #trigger:hover {
+      font-size: 20px;
+      transition: ease-in-out 600ms;
+      color: rgb(231, 228, 250);
+    }
+
+    .Backstyle:active{
+      background: rgba(125, 161, 240, 0.589);
+      transition: ease-in-out 50ms;
+    }
+
+  </style>
+</head> 
+<body> 
+    <div class="overlay-btn">
+        <div class="Backstyle">
+            <span id="trigger">AI</span>    
+        </div> 
+    </div> 
+  
+
+  <script>
+    const { ipcRenderer } = require("electron");
+    document.getElementById("trigger").addEventListener("click", () => {
+      ipcRenderer.send("open-card");
+    });
+  </script>
+</body>
+</html>
