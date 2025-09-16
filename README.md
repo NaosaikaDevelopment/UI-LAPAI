@@ -1,5 +1,9 @@
 # UI-LAPAI
 This UI project is based from [LAPAI](https://github.com/NaosaikaDevelopment/LAPAI_Project_Experimental) (Im using Electron for the UI edit) From here you can modify your UI for LAPAI project as you want, but for info LAPAI is using python 3.10/3.11 and its not comptible if you install ****Electron****, make sure you had Env for this.
+
+## NOTE this is a Raw UI project for you customize UI, fyi this is using Electron to make the UI.
+
+
 ## Preview:
 
 Launcher:
@@ -29,3 +33,5 @@ This project is licensed under the MIT License — see the LICENSE file for deta
 - Electron — MIT License © OpenJS Foundation
 
 Other dependencies are licensed by their respective author
+
+# Reminder: this project worked alone by me (ND)
