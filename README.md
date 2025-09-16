@@ -1,5 +1,5 @@
 # UI-LAPAI
-This UI project is based from [LAPAI](https://github.com/NaosaikaDevelopment/LAPAI_Project_Experimental) From here you can modify your UI for LAPAI project as you want, but for info LAPAI is using python 3.10/3.11 and its not comptible if you install electron, make sure you had Env for this.
+This UI project is based from [LAPAI](https://github.com/NaosaikaDevelopment/LAPAI_Project_Experimental) (Im using Electron for the UI edit) From here you can modify your UI for LAPAI project as you want, but for info LAPAI is using python 3.10/3.11 and its not comptible if you install ****Electron****, make sure you had Env for this.
 ## Preview:
 
 Launcher:
